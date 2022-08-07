@@ -2,4 +2,4 @@
 .gradle/
 application.yml
 
-Secret.java
+/src/main/java/com/example/demo/donfig/secret/Secret.java
