@@ -44,6 +44,7 @@ public class UserController {
      * @return BaseResponse<List<GetUserRes>>
      */
     //Query String
+    /*
     @ResponseBody
     @GetMapping("") // (GET) 127.0.0.1:9000/app/users
     public BaseResponse<List<GetUserRes>> getUsers(@RequestParam(required = false) String Email) {
@@ -59,6 +60,8 @@ public class UserController {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
+     */
+
 
     /**
      * 회원 1명 조회 API
@@ -66,6 +69,7 @@ public class UserController {
      * @return BaseResponse<GetUserRes>
      */
     // Path-variable
+    /*
     @ResponseBody
     @GetMapping("/{userIdx}") // (GET) 127.0.0.1:9000/app/users/:userIdx
     public BaseResponse<GetUserRes> getUser(@PathVariable("userIdx") int userIdx) {
@@ -78,6 +82,7 @@ public class UserController {
         }
 
     }
+    */
 
     /**
      * 회원가입 API
@@ -133,7 +138,7 @@ public class UserController {
 
     /**
      * 회원 비밀번호 변경 API
-     * [PATCH] /users/pwd/:userIdx
+     * [PATCH] /users/pwd
      * @return BaseResponse<String>
      */
 
@@ -142,11 +147,11 @@ public class UserController {
     public BaseResponse<String> modifyPassword(@RequestBody User user){
         try {
             //jwt에서 idx 추출.
-            //int userIdxByJwt = jwtService.getUserIdx();
+            int userIdxByJwt = jwtService.getUserIdx();
             //userIdx와 접근한 유저가 같은지 확인
-            //if(user.getUserIdx() != userIdxByJwt){
-            //    return new BaseResponse<>(INVALID_USER_JWT);
-            //}
+            if(user.getUserIdx() != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
             if(user.getEmail() == null) {
                 return new BaseResponse<>(POST_USERS_EMPTY_EMAIL);
             }
@@ -176,16 +181,24 @@ public class UserController {
     @ResponseBody
     @PostMapping("/{userIdx}")
     public BaseResponse<PostProfileRes> createProfile(@PathVariable("userIdx") int userIdx, @RequestParam String keyword, @RequestBody PostProfileReq postProfileReq) {
-        if(postProfileReq.getName().equals("")){
-            return new BaseResponse<>(POST_PROFILE_EMPTY_NAME);
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            if(postProfileReq.getName().equals("")){
+                return new BaseResponse<>(POST_PROFILE_EMPTY_NAME);
+            }
+            if(postProfileReq.getName().length() > 45) {
+                return new BaseResponse<>(POST_PROFILE_LONG_NAME);
+            }
+            PostProfileRes postProfileRes = userService.createProfile(userIdx, postProfileReq);
+            return new BaseResponse<>(postProfileRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
         }
-        if(postProfileReq.getName().length() > 45) {
-            return new BaseResponse<>(POST_PROFILE_LONG_NAME);
-        }
-
-
-        PostProfileRes postProfileRes = userService.createProfile(userIdx, postProfileReq);
-        return new BaseResponse<>(postProfileRes);
 
     }
 

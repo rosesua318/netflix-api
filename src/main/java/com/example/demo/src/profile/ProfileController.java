@@ -42,18 +42,25 @@ public class ProfileController {
     @ResponseBody
     @PatchMapping("/{profileIdx}")
     public BaseResponse<String> modifyPin(@PathVariable("profileIdx") int profileIdx, @RequestParam String keyword, @RequestBody Profile profile) throws BaseException {
-        if(profile.getPassword().equals("")) {
-            return new BaseResponse<>(PROFILE_EMPTY_PASSWORD);
-        }
-        if(profile.getPassword().length() > 4) {
-            return new BaseResponse<>(PROFILE_LONG_PASSWORD);
-        }
-        try{
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(profile.getUserIdx() != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            if(profile.getPassword().equals("")) {
+                return new BaseResponse<>(PROFILE_EMPTY_PASSWORD);
+            }
+            if(profile.getPassword().length() > 4) {
+                return new BaseResponse<>(PROFILE_LONG_PASSWORD);
+            }
             PatchPinReq patchPinReq = new PatchPinReq(profileIdx, profile.getPassword());
             profileService.modifyPin(patchPinReq);
             String result = "";
             return new BaseResponse<>(result);
-        } catch(BaseException exception){
+
+        } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
@@ -66,18 +73,24 @@ public class ProfileController {
     @ResponseBody
     @PutMapping("/{profileIdx}")
     public BaseResponse<PutProfileRes> modifyInfo(@PathVariable("profileIdx") int profileIdx, @RequestBody Profile profile) throws BaseException {
-        if(profile.getName().equals("")) {
-            return new BaseResponse<>(POST_PROFILE_EMPTY_NAME);
-        }
-        if(profile.getName().length() > 45) {
-            return new BaseResponse<>(POST_PROFILE_LONG_NAME);
-        }
         try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(profile.getUserIdx() != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            if(profile.getName().equals("")) {
+                return new BaseResponse<>(POST_PROFILE_EMPTY_NAME);
+            }
+            if(profile.getName().length() > 45) {
+                return new BaseResponse<>(POST_PROFILE_LONG_NAME);
+            }
             PutProfileReq putProfileReq = new PutProfileReq(profile.getProfileIdx(), profile.getName(), profile.getImage(), profile.getIsNext(), profile.getIsPreview(), profile.getPresentLangIdx());
             PutProfileRes putProfileRes = profileService.modifyInfo(putProfileReq);
             return new BaseResponse<>(putProfileRes);
-        } catch (BaseException exception){
-            return new BaseResponse<>(exception.getStatus());
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
         }
     }
 
@@ -89,17 +102,24 @@ public class ProfileController {
     @ResponseBody
     @PostMapping("/{profileIdx}")
     public BaseResponse<PostPinRes> loginPin(@PathVariable("profileIdx") int profileIdx, @RequestBody PostPinReq postPinReq) {
-        if(postPinReq.getPassword().equals("")) {
-            return new BaseResponse<>(PROFILE_EMPTY_PASSWORD);
-        }
-        if(postPinReq.getPassword().length() > 4) {
-            return new BaseResponse<>(PROFILE_LONG_PASSWORD);
-        }
         try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(postPinReq.getUserIdx() != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            if(postPinReq.getPassword().equals("")) {
+                return new BaseResponse<>(PROFILE_EMPTY_PASSWORD);
+            }
+            if(postPinReq.getPassword().length() > 4) {
+                return new BaseResponse<>(PROFILE_LONG_PASSWORD);
+            }
             PostPinRes postPinRes = profileProvider.loginPin(profileIdx, postPinReq);
             return new BaseResponse<>(postPinRes);
-        } catch (BaseException exception){
-            return new BaseResponse<>(exception.getStatus());
+
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
         }
     }
 
@@ -111,7 +131,18 @@ public class ProfileController {
     @ResponseBody
     @GetMapping("/{userIdx}")
     public BaseResponse<List<GetProfileRes>> getProfiles(@PathVariable("userIdx") int userIdx) throws BaseException {
-        List<GetProfileRes> getProfilesRes = profileProvider.getProfiles(userIdx);
-        return new BaseResponse<>(getProfilesRes);
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetProfileRes> getProfilesRes = profileProvider.getProfiles(userIdx);
+            return new BaseResponse<>(getProfilesRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+
     }
 }

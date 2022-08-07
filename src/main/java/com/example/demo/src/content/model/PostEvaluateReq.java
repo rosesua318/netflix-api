@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class PostEvaluateReq {
+    private int userIdx;
     private int contentIdx;
     private int likes;
 }

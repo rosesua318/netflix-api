@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import static com.example.demo.config.BaseResponseStatus.INVALID_USER_JWT;
+
 @RestController
 @RequestMapping("/app")
 public class DetailContentController {
@@ -34,9 +36,21 @@ public class DetailContentController {
      */
     @ResponseBody
     @GetMapping("/series/{profileIdx}")
-    public BaseResponse<GetSeriesDetailRes> getSeriesDetails(@PathVariable("profileIdx") int profileIdx, @RequestParam(name = "contentIdx") int contentIdx,
+    public BaseResponse<GetSeriesDetailRes> getSeriesDetails(@PathVariable("profileIdx") int profileIdx,
+                                                             @RequestParam(name="userIdx") int userIdx,
+                                                             @RequestParam(name = "contentIdx") int contentIdx,
                                                              @RequestParam(name = "season", defaultValue = "1") int season) throws BaseException {
-        GetSeriesDetailRes getSeriesDetailRes = detailContentProvider.getSeriesDetails(profileIdx, contentIdx, season);
-        return new BaseResponse<>(getSeriesDetailRes);
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            GetSeriesDetailRes getSeriesDetailRes = detailContentProvider.getSeriesDetails(profileIdx, contentIdx, season);
+            return new BaseResponse<>(getSeriesDetailRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 }

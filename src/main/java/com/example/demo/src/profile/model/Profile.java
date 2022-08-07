@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Profile {
+    private int userIdx;
     private int profileIdx;
     private String name;
     private String image;

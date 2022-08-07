@@ -10,5 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostPinReq {
+    private int userIdx;
     private String password;
 }

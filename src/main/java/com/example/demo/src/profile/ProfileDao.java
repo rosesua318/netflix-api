@@ -47,11 +47,12 @@ public class ProfileDao {
     }
 
     public Profile getPin(int profileIdx) {
-        String getPinQuery = "select name, image, password, isKids, isNext, isPreview, presentLangIdx, status from Profile where profileIdx = ?";
+        String getPinQuery = "select profileIdx, userIdx, name, image, password, isKids, isNext, isPreview, presentLangIdx, status from Profile where profileIdx = ?";
         String getPinParams = String.valueOf(profileIdx);
 
         return this.jdbcTemplate.queryForObject(getPinQuery,
                 (rs,rowNum)-> new Profile(
+                        rs.getInt("userIdx"),
                         rs.getInt("profileIdx"),
                         rs.getString("name"),
                         rs.getString("image"),

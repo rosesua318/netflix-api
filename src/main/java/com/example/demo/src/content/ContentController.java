@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.example.demo.config.BaseResponseStatus.INVALID_USER_JWT;
+
 @RestController
 @RequestMapping("/app")
 public class ContentController {
@@ -38,21 +40,43 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/likes/{profileIdx}")
-    public BaseResponse<List<GetLikeRes>> getLikes(@PathVariable("profileIdx") int profileIdx) throws BaseException {
-        List<GetLikeRes> getLikeRes = contentProvider.getLikes(profileIdx);
-        return new BaseResponse<>(getLikeRes);
+    public BaseResponse<List<GetLikeRes>> getLikes(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetLikeRes> getLikeRes = contentProvider.getLikes(profileIdx);
+            return new BaseResponse<>(getLikeRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+
     }
 
     /**
      * 최다 검색 조회 API
-     * [GET] /searches
+     * [GET] /searches/:userIdx
      * @return BaseResponse<List<GetMostSearchRes>>
      */
     @ResponseBody
-    @GetMapping("/searches")
-    public BaseResponse<List<GetMostSearchRes>> getMostSearches() throws BaseException {
-        List<GetMostSearchRes> getMostSearchRes = contentProvider.getMostSearches();
-        return new BaseResponse<>(getMostSearchRes);
+    @GetMapping("/searches/{userIdx}")
+    public BaseResponse<List<GetMostSearchRes>> getMostSearches(@PathVariable("userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetMostSearchRes> getMostSearchRes = contentProvider.getMostSearches();
+            return new BaseResponse<>(getMostSearchRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+
     }
 
     /**
@@ -62,9 +86,19 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/categories/main")
-    public BaseResponse<List<GetMainCategoryRes>> getMainCategories() throws BaseException {
-        List<GetMainCategoryRes> getMainCategoryRes = contentProvider.getMainCategories();
-        return new BaseResponse<>(getMainCategoryRes);
+    public BaseResponse<List<GetMainCategoryRes>> getMainCategories(@RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetMainCategoryRes> getMainCategoryRes = contentProvider.getMainCategories();
+            return new BaseResponse<>(getMainCategoryRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -74,9 +108,21 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/categories/series")
-    public BaseResponse<List<GetSeriesCategoryRes>> getSeriesCategories() throws BaseException {
-        List<GetSeriesCategoryRes> getSeriesCategoryRes = contentProvider.getSeriesCategories();
-        return new BaseResponse<>(getSeriesCategoryRes);
+    public BaseResponse<List<GetSeriesCategoryRes>> getSeriesCategories(@RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetSeriesCategoryRes> getSeriesCategoryRes = contentProvider.getSeriesCategories();
+            return new BaseResponse<>(getSeriesCategoryRes);
+
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+
     }
 
     /**
@@ -86,9 +132,19 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/categories/movie")
-    public BaseResponse<List<GetMovieCategoryRes>> getMovieCategories() throws BaseException {
-        List<GetMovieCategoryRes> getMovieCategoryRes = contentProvider.getMovieCategories();
-        return new BaseResponse<>(getMovieCategoryRes);
+    public BaseResponse<List<GetMovieCategoryRes>> getMovieCategories(@RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetMovieCategoryRes> getMovieCategoryRes = contentProvider.getMovieCategories();
+            return new BaseResponse<>(getMovieCategoryRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -99,8 +155,18 @@ public class ContentController {
     @ResponseBody
     @PostMapping("/evaluations/{profileIdx}")
     public BaseResponse<PostEvaluateRes> evaluate(@PathVariable("profileIdx") int profileIdx, @RequestBody PostEvaluateReq postEvaluateReq) throws BaseException {
-        PostEvaluateRes postEvaluateRes = contentService.evaluate(profileIdx, postEvaluateReq);
-        return new BaseResponse<>(postEvaluateRes);
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(postEvaluateReq.getUserIdx() != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            PostEvaluateRes postEvaluateRes = contentService.evaluate(profileIdx, postEvaluateReq);
+            return new BaseResponse<>(postEvaluateRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -108,13 +174,14 @@ public class ContentController {
      * [GET] /evaluations/:profileIdx
      * @return BaseResponse<GetEvaluateRes>
      */
-    // 삭제 필요
+    /*
     @ResponseBody
     @GetMapping("/evaluations/{profileIdx}")
     public BaseResponse<GetEvaluateRes> getEvaluate(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="contentIdx") int contentIdx) throws BaseException {
         GetEvaluateRes getEvaluateRes = contentProvider.getEvaluate(profileIdx, contentIdx);
         return new BaseResponse<>(getEvaluateRes);
     }
+     */
 
     /**
      * 모두의 인기 콘텐츠 조회 API
@@ -123,9 +190,19 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/hot/{profileIdx}")
-    public BaseResponse<List<GetHotRes>> getHots(@PathVariable("profileIdx") int profileIdx) throws BaseException {
-        List<GetHotRes> getHotRes = contentProvider.getHots(profileIdx);
-        return new BaseResponse<>(getHotRes);
+    public BaseResponse<List<GetHotRes>> getHots(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetHotRes> getHotRes = contentProvider.getHots(profileIdx);
+            return new BaseResponse<>(getHotRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -135,9 +212,19 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/topseries/{profileIdx}")
-    public BaseResponse<List<GetTopSeriesRes>> getTopSeries(@PathVariable("profileIdx") int profileIdx) throws BaseException {
-        List<GetTopSeriesRes> getTopSeries = contentProvider.getTopSeries(profileIdx);
-        return new BaseResponse<>(getTopSeries);
+    public BaseResponse<List<GetTopSeriesRes>> getTopSeries(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetTopSeriesRes> getTopSeries = contentProvider.getTopSeries(profileIdx);
+            return new BaseResponse<>(getTopSeries);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -147,9 +234,19 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/topmovies/{profileIdx}")
-    public BaseResponse<List<GetTopMoviesRes>> getTopMovies(@PathVariable("profileIdx") int profileIdx) throws BaseException {
-        List<GetTopMoviesRes> getTopMovies = contentProvider.getTopMovies(profileIdx);
-        return new BaseResponse<>(getTopMovies);
+    public BaseResponse<List<GetTopMoviesRes>> getTopMovies(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="userIdx") int userIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            List<GetTopMoviesRes> getTopMovies = contentProvider.getTopMovies(profileIdx);
+            return new BaseResponse<>(getTopMovies);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 
     /**
@@ -159,8 +256,18 @@ public class ContentController {
      */
     @ResponseBody
     @GetMapping("/movies/{profileIdx}")
-    public BaseResponse<GetMovieDetailRes> getMovieDetails(@PathVariable("profileIdx") int profileIdx, @RequestParam(name = "contentIdx") int contentIdx) throws BaseException {
-        GetMovieDetailRes getMovieDetailRes = contentProvider.getMovieDetails(profileIdx, contentIdx);
-        return new BaseResponse<>(getMovieDetailRes);
+    public BaseResponse<GetMovieDetailRes> getMovieDetails(@PathVariable("profileIdx") int profileIdx, @RequestParam(name="userIdx") int userIdx, @RequestParam(name = "contentIdx") int contentIdx) throws BaseException {
+        try {
+            //jwt에서 idx 추출.
+            int userIdxByJwt = jwtService.getUserIdx();
+            //userIdx와 접근한 유저가 같은지 확인
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(INVALID_USER_JWT);
+            }
+            GetMovieDetailRes getMovieDetailRes = contentProvider.getMovieDetails(profileIdx, contentIdx);
+            return new BaseResponse<>(getMovieDetailRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 }
