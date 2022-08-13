@@ -1,13 +1,16 @@
 package com.example.demo.src.user;
 
 
+import com.example.demo.src.kakao.model.PostKakaoSignupReq;
 import com.example.demo.src.user.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserDao {
@@ -17,6 +20,22 @@ public class UserDao {
     @Autowired
     public void setDataSource(DataSource dataSource){
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    public User checkKakaoId(String kakaoId) {
+        String getUserQuery = "select userIdx, status, email, password from User where kakaoId = ?";
+        String getUserParams = kakaoId;
+        try {
+            return this.jdbcTemplate.queryForObject(getUserQuery,
+                    (rs, rowNum) -> new User(
+                            rs.getInt("userIdx"),
+                            rs.getString("status"),
+                            rs.getString("email"),
+                            rs.getString("password")),
+                    getUserParams);
+        } catch (IncorrectResultSizeDataAccessException error) {
+            return null;
+        }
     }
 
 
@@ -73,6 +92,30 @@ public class UserDao {
 
         String lastInserIdQuery = "select last_insert_id()";
         return this.jdbcTemplate.queryForObject(lastInserIdQuery,int.class);
+    }
+
+    public int createKakaoUser(String kakaoId) {
+        String createUserQuery = "insert into User (kakaoId) VALUES (?)";
+        this.jdbcTemplate.update(createUserQuery, kakaoId);
+
+        String lastInserIdQuery = "select last_insert_id()";
+        return this.jdbcTemplate.queryForObject(lastInserIdQuery,int.class);
+    }
+
+    public int updateKUser(PostKakaoSignupReq postKakaoSignupReq) {
+        String createCardQuery = "insert into Card (cardNumber, name, yymm, birthYear, birthMonth, birthDay, phone) VALUES (?,?,?,?,?,?,?)";
+        Object[] createCardParams = new Object[]{postKakaoSignupReq.getCard().getCardNumber(), postKakaoSignupReq.getCard().getName(),
+                postKakaoSignupReq.getCard().getYymm(), postKakaoSignupReq.getCard().getBirthYear(),
+                postKakaoSignupReq.getCard().getBirthMonth(), postKakaoSignupReq.getCard().getBirthDay(), postKakaoSignupReq.getCard().getPhone()};
+        this.jdbcTemplate.update(createCardQuery, createCardParams);
+        String lastIdQuery = "select last_insert_id()";
+        int cardId = this.jdbcTemplate.queryForObject(lastIdQuery, int.class);
+
+        String updateUserQuery = "update User set email = ?, password = ?, membershipIdx = ?, cardIdx = ? where userIdx = ?";
+        Object[] updateUserParams = new Object[]{postKakaoSignupReq.getEmail(), postKakaoSignupReq.getPassword(),
+        postKakaoSignupReq.getMembershipIdx(), cardId, postKakaoSignupReq.getUserIdx()};
+        this.jdbcTemplate.update(updateUserQuery, updateUserParams);
+        return postKakaoSignupReq.getUserIdx();
     }
 
     public int createProfile(int userIdx, PostProfileReq postProfileReq) {

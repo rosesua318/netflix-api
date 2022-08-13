@@ -4,6 +4,8 @@ package com.example.demo.src.user;
 
 import com.example.demo.config.BaseException;
 import com.example.demo.config.BaseResponse;
+import com.example.demo.src.kakao.model.PostKakaoSignupReq;
+import com.example.demo.src.kakao.model.PostKakaoSignupRes;
 import com.example.demo.src.user.model.*;
 import com.example.demo.utils.JwtService;
 import com.example.demo.utils.SHA256;
@@ -56,6 +58,38 @@ public class UserService {
             //jwt 발급.
             //String jwt = jwtService.createJwt(userIdx);
             return new PostUserRes(userIdx);
+        } catch (Exception exception) {
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public PostKakaoSignupRes updateKUser(String jwt, PostKakaoSignupReq postKakaoSignupReq) throws BaseException {
+        if(userProvider.checkEmail(postKakaoSignupReq.getEmail()) ==1){
+            throw new BaseException(POST_USERS_EXISTS_EMAIL);
+        }
+        String pwd;
+        try{
+            //암호화
+            pwd = new SHA256().encrypt(postKakaoSignupReq.getPassword());
+            postKakaoSignupReq.setPassword(pwd);
+
+        } catch (Exception ignored) {
+            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+        }
+        try{
+            int userIdx = userDao.updateKUser(postKakaoSignupReq);
+            return new PostKakaoSignupRes(userIdx, jwt);
+        } catch (Exception exception) {
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public int createKakaoUser(String kakaoId) throws BaseException {
+        if(userProvider.checkKakaoId(kakaoId) != null) {
+            throw new BaseException(POST_USERS_EXISTS_KAKAO);
+        }
+        try {
+            return userDao.createKakaoUser(kakaoId);
         } catch (Exception exception) {
             throw new BaseException(DATABASE_ERROR);
         }

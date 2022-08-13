@@ -30,6 +30,8 @@ public enum BaseResponseStatus {
     POST_USERS_INVALID_EMAIL(false, 2016, "이메일 형식을 확인해주세요."),
     POST_USERS_EXISTS_EMAIL(false,2017,"중복된 이메일입니다."),
 
+    POST_USERS_EXISTS_KAKAO(false, 2025, "중복된 카카오 아이디입니다."),
+
     POST_LOGIN_NOT_EXISTS_EMAIL(false, 2018, "없는 이메일입니다."),
 
     POST_PROFILE_EMPTY_NAME(false, 2019, "프로필 이름을 입력해주세요."),
